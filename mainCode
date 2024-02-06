@@ -1,0 +1,58 @@
+#include <TroykaCurrent.h> 
+
+ 
+//Датчик тока 
+ACS712 sensorCurrent(A4); 
+const int maxSolarPower = 0.37; 
+int nowSolarPower; 
+ 
+void setup() 
+{ 
+  Serial.begin(9600); 
+  pinMode(9, OUTPUT); 
+  pinMode(8, OUTPUT); 
+   pinMode(A2, INPUT); 
+  pinMode(A1, INPUT); 
+} 
+ 
+void loop() 
+{ 
+  delay(200); 
+ 
+  //Получаем данные с датчика 
+  nowSolarPower = sensorCurrent.readCurrentDC() + 0.03; 
+
+  //Сравниваем с оптимальным моментом для поворота 
+  //if (nowSolarPower > maxSolarPower) 
+  //  return; 
+ 
+  int photoresistorValue2 = analogRead(A2);//нижний левый горизонт 
+  int photoresistorValue1 = analogRead(A1);//нижний правый горизонт 
+  Serial.print("A2 ");
+ Serial.println(photoresistorValue2);
+ Serial.print("A1 ");
+  Serial.println(photoresistorValue1);
+   
+  
+
+ 
+  //Поворот 
+  if(photoresistorValue2 < photoresistorValue1) 
+  { 
+    digitalWrite(9,1); 
+    digitalWrite(8,0); 
+  } 
+  else 
+  { 
+    digitalWrite(9,0); 
+    digitalWrite(8,1); 
+  } 
+ 
+  delay(50); 
+  
+  //Стоп 
+ // if (nowSolarPower < maxSolarPower) 
+ //   digitalWrite(9,0); 
+ //   digitalWrite(8,0); 
+   
+}
