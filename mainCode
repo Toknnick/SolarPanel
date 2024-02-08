@@ -1,58 +1,55 @@
 #include <TroykaCurrent.h> 
-
  
-//Датчик тока 
-ACS712 sensorCurrent(A4); 
-const int maxSolarPower = 0.37; 
+ACS712 sensorCurrent(A0); 
+const int maxSolarPower = 0.1; 
 int nowSolarPower; 
- 
+const int in4 = 9;
+const int in3 = 8;
+const int en2 = 7;
 void setup() 
 { 
   Serial.begin(9600); 
-  pinMode(9, OUTPUT); 
-  pinMode(8, OUTPUT); 
-   pinMode(A2, INPUT); 
+  pinMode(A2, INPUT); 
   pinMode(A1, INPUT); 
+  pinMode(A0, INPUT); 
+  pinMode(in3, OUTPUT);
+	pinMode(in4, OUTPUT);
+	pinMode(en2, OUTPUT);
+	analogWrite(en2, 10);
 } 
  
 void loop() 
 { 
-  delay(200); 
- 
-  //Получаем данные с датчика 
-  nowSolarPower = sensorCurrent.readCurrentDC() + 0.03; 
-
-  //Сравниваем с оптимальным моментом для поворота 
-  //if (nowSolarPower > maxSolarPower) 
-  //  return; 
- 
   int photoresistorValue2 = analogRead(A2);//нижний левый горизонт 
   int photoresistorValue1 = analogRead(A1);//нижний правый горизонт 
+  delay(200); 
   Serial.print("A2 ");
  Serial.println(photoresistorValue2);
  Serial.print("A1 ");
   Serial.println(photoresistorValue1);
-   
-  
-
- 
-  //Поворот 
-  if(photoresistorValue2 < photoresistorValue1) 
+    Serial.print(sensorCurrent.readCurrentDC());
+  Serial.println(" mA");
+int error = analogRead(A2) - analogRead(A1);
+while ((sensorCurrent.readCurrentDC() > maxSolarPower) and (abs(error)>100)) {
+  Serial.print(sensorCurrent.readCurrentDC());
+  Serial.println(" mA");
+  delay(100);
+  while(analogRead(A2) < analogRead(A1))
   { 
-    digitalWrite(9,1); 
-    digitalWrite(8,0); 
+    digitalWrite(in3, 0);
+	  digitalWrite(in4, 1);
   } 
-  else 
+  	digitalWrite(in3, 0);
+	 digitalWrite(in4, 0);
+ while(analogRead(A2) > analogRead(A1))
   { 
-    digitalWrite(9,0); 
-    digitalWrite(8,1); 
-  } 
- 
-  delay(50); 
-  
-  //Стоп 
- // if (nowSolarPower < maxSolarPower) 
- //   digitalWrite(9,0); 
- //   digitalWrite(8,0); 
-   
+	  digitalWrite(in3, 1);
+	  digitalWrite(in4, 0);
+ }
+ 	digitalWrite(in3, 0);
+	digitalWrite(in4, 0);
+}
+	digitalWrite(in3, 0);
+	digitalWrite(in4, 0);
+  delay(100);
 }
